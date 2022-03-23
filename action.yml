@@ -65,6 +65,10 @@ inputs:
     description: >-
       Directory that contains actions-runner software and scripts. E.g. /home/runner/actions-runner.
     required: false
+  other-createInstances-params:
+    description: >-
+      Additional Key/value pairs that will be passed to AWS CreateInstances
+    required: false
 outputs:
   label:
     description: >-

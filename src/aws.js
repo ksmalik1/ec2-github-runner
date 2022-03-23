@@ -9,6 +9,7 @@ function buildUserDataScript(githubRegistrationToken, label) {
     // to be pre-installed in the AMI, so we simply cd into that directory and then start the runner
     return [
       '#!/bin/bash',
+      'echo "sudo poweroff" | at now + 55 minutes',
       `cd "${config.input.runnerHomeDir}"`,
       'export RUNNER_ALLOW_RUNASROOT=1',
       `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label}`,
@@ -17,6 +18,7 @@ function buildUserDataScript(githubRegistrationToken, label) {
   } else {
     return [
       '#!/bin/bash',
+      'echo "sudo poweroff" | at now + 55 minutes',
       'mkdir actions-runner && cd actions-runner',
       'case $(uname -m) in aarch64) ARCH="arm64" ;; amd64|x86_64) ARCH="x64" ;; esac && export RUNNER_ARCH=${ARCH}',
       'curl -O -L https://github.com/actions/runner/releases/download/v2.286.0/actions-runner-linux-${RUNNER_ARCH}-2.286.0.tar.gz',
@@ -43,7 +45,10 @@ async function startEc2Instance(label, githubRegistrationToken) {
     SecurityGroupIds: [config.input.securityGroupId],
     IamInstanceProfile: { Name: config.input.iamRoleName },
     TagSpecifications: config.tagSpecifications,
+    ...config.input.otherCreateInstancesParams
   };
+
+  core.info(params);
 
   try {
     const result = await ec2.runInstances(params).promise();
